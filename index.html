@@ -185,10 +185,21 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
             transform: translateY(-5px);
             box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.15);
         }
-        
-        .appointment-type-card.selected {
+          .appointment-type-card.selected {
             border-color: var(--primary-color);
             background-color: rgba(13, 110, 253, 0.1);
+        }
+        
+        .modify-option {
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            border: 2px solid transparent;
+        }
+        
+        .modify-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-color);
         }
         
         .footer {
@@ -219,14 +230,24 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#doctors">Our Doctors</a>
-                    </li>
-                    <li class="nav-item">
+                    </li>                    <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="loginNavItem">
                         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
                             <i class="bi bi-person-circle me-1"></i>Login
                         </a>
+                    </li>
+                    <li class="nav-item dropdown d-none" id="userNavItem">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-check-fill me-1"></i><span id="userName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-check me-2"></i>My Appointments</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutButton"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -581,10 +602,84 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <h2 class="text-center mb-4">Patient Information</h2>
-                    
-                    <div class="card">
+                      <div class="card">
                         <div class="card-body">
-                            <form id="patientForm" novalidate>
+                            <!-- Logged in user simplified form -->
+                            <div id="loggedInForm" class="d-none">
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <strong>Welcome back!</strong> We've pre-filled your information from your profile.
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label"><strong>Patient Information</strong></label>
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p class="mb-1"><strong>Name:</strong> <span id="profileName">-</span></p>
+                                                        <p class="mb-1"><strong>Email:</strong> <span id="profileEmail">-</span></p>
+                                                        <p class="mb-0"><strong>Phone:</strong> <span id="profilePhone">-</span></p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p class="mb-1"><strong>Date of Birth:</strong> <span id="profileDOB">-</span></p>
+                                                        <p class="mb-1"><strong>Insurance:</strong> <span id="profileInsurance">-</span></p>
+                                                        <p class="mb-0"><strong>Address:</strong> <span id="profileAddress">-</span></p>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="editProfile()">
+                                                        <i class="bi bi-pencil me-1"></i>Edit Profile
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <form id="simplifiedPatientForm" novalidate>
+                                    <div class="mb-3">
+                                        <label for="reasonForVisitSimple" class="form-label">Reason for Visit *</label>
+                                        <textarea class="form-control" id="reasonForVisitSimple" rows="3" 
+                                                  placeholder="Please describe the reason for your appointment" required></textarea>
+                                        <div class="invalid-feedback">
+                                            Please provide the reason for your visit.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="symptomsSimple" class="form-label">Current Symptoms (if any)</label>
+                                        <textarea class="form-control" id="symptomsSimple" rows="2" 
+                                                  placeholder="Describe any current symptoms"></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="urgencyLevel" class="form-label">Urgency Level</label>
+                                        <select class="form-select" id="urgencyLevel">
+                                            <option value="routine">Routine - Not urgent</option>
+                                            <option value="moderate">Moderate - Within a week</option>
+                                            <option value="urgent">Urgent - Within 24-48 hours</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="additionalNotes" class="form-label">Additional Notes</label>
+                                        <textarea class="form-control" id="additionalNotes" rows="2" 
+                                                  placeholder="Any additional information for your doctor"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Guest user full form -->
+                            <div id="guestForm">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>New to MyHealth?</strong> Please fill out your information below. 
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Already have an account? Login here</a>
+                                </div>
+                                
+                                <form id="patientForm" novalidate>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="firstName" class="form-label">First Name *</label>
@@ -694,10 +789,11 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                                     </label>
                                     <div class="invalid-feedback">
                                         You must agree to the terms and conditions.
-                                    </div>
-                                </div>
+                                    </div>                                </div>
                             </form>
-                              <div class="d-flex justify-content-between">
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
                                 <button class="btn btn-outline-secondary" onclick="goToStep(3)">
                                     <i class="bi bi-arrow-left me-2"></i>Back
                                 </button>
@@ -786,29 +882,55 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
         </div>
 
         <!-- Success Message -->
-        <div class="booking-step d-none" id="successMessage">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
+        <div class="booking-step d-none" id="successMessage">            <div class="row justify-content-center">
+                <div class="col-lg-8">
                     <div class="text-center">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
                         <h2 class="mt-4 text-success">Appointment Confirmed!</h2>
                         <p class="lead mb-4">Your appointment has been successfully booked.</p>
                         
-                        <div class="card">
+                        <div class="card mb-4">
                             <div class="card-body">
                                 <h5>Confirmation Details</h5>
                                 <p><strong>Confirmation Number:</strong> <span class="text-primary" id="confirmationNumber">APT-2025-001234</span></p>
                                 <p class="mb-0">A confirmation email has been sent to your email address with all the details.</p>
                             </div>
                         </div>
-                        
-                        <div class="mt-4">
-                            <button class="btn btn-primary me-2" onclick="location.reload()">
-                                <i class="bi bi-plus-circle me-2"></i>Book Another Appointment
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="window.print()">
-                                <i class="bi bi-printer me-2"></i>Print Confirmation
-                            </button>
+
+                        <!-- Appointment Summary -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Appointment Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="appointmentSummary">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Management Options -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <button class="btn btn-primary w-100" onclick="location.reload()">
+                                    <i class="bi bi-plus-circle me-2"></i>Book Another
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-primary w-100" onclick="window.print()">
+                                    <i class="bi bi-printer me-2"></i>Print
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-warning w-100" onclick="modifyAppointment()">
+                                    <i class="bi bi-pencil-square me-2"></i>Modify
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-danger w-100" onclick="cancelAppointment()">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -933,16 +1055,13 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                             <label class="form-check-label" for="rememberMe">Remember me</label>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
+                </div>                <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Login</button>
+                    <button type="button" class="btn btn-primary" id="loginButton">Login</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Terms Modal -->
+    </div>    <!-- Terms Modal -->
     <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -967,6 +1086,92 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
         </div>
     </div>
 
+    <!-- Modify Appointment Modal -->
+    <div class="modal fade" id="modifyModal" tabindex="-1" aria-labelledby="modifyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modifyModalLabel">Modify Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Select what you'd like to modify:</p>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 modify-option" onclick="modifyDoctor()">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-person-badge text-primary" style="font-size: 2rem;"></i>
+                                    <h6 class="mt-2">Change Doctor</h6>
+                                    <p class="small text-muted">Select a different doctor or specialty</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 modify-option" onclick="modifyDateTime()">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calendar-date text-primary" style="font-size: 2rem;"></i>
+                                    <h6 class="mt-2">Change Date/Time</h6>
+                                    <p class="small text-muted">Select a different date or time slot</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 modify-option" onclick="modifyInsurance()">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-shield-check text-primary" style="font-size: 2rem;"></i>
+                                    <h6 class="mt-2">Update Insurance</h6>
+                                    <p class="small text-muted">Change insurance information</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 modify-option" onclick="modifyType()">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-laptop text-primary" style="font-size: 2rem;"></i>
+                                    <h6 class="mt-2">Change Type</h6>
+                                    <p class="small text-muted">Switch between in-person and telehealth</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Appointment Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Cancel Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Are you sure you want to cancel this appointment?</strong>
+                    </div>
+                    
+                    <p>This action cannot be undone. Your appointment will be permanently cancelled.</p>
+                    
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" id="cancellationReason" style="height: 100px" placeholder="Optional: Reason for cancellation"></textarea>
+                        <label for="cancellationReason">Reason for Cancellation (Optional)</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Appointment</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmCancellation()">Cancel Appointment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>        // Application State
@@ -982,12 +1187,41 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
         let currentStep = 1;
         let selectedDate = null;
         let selectedTime = null;
+        let isLoggedIn = false;
+        let currentUser = null;
 
-        // Initialize the application
+        // Mock user data
+        const mockUserProfiles = {
+            'john@email.com': {
+                firstName: 'John',
+                lastName: 'Smith',
+                email: 'john@email.com',
+                phone: '(555) 123-4567',
+                dateOfBirth: '1985-03-15',
+                gender: 'male',
+                address: '123 Main Street, New York, NY 10001',
+                insurance: 'Blue Cross Blue Shield',
+                allergies: 'Penicillin',
+                medications: 'Lisinopril 10mg daily'
+            },
+            'sarah@email.com': {
+                firstName: 'Sarah',
+                lastName: 'Johnson',
+                email: 'sarah@email.com',
+                phone: '(555) 987-6543',
+                dateOfBirth: '1990-07-22',
+                gender: 'female',
+                address: '456 Oak Avenue, Los Angeles, CA 90210',
+                insurance: 'Aetna',
+                allergies: 'None known',
+                medications: 'Birth control pills'
+            }
+        };        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             initializeCalendar();
             initializeEventListeners();
             filterDoctors();
+            updatePatientForm(); // Initialize form state
         });
 
         // Scroll to booking section
@@ -1024,6 +1258,46 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
             currentStep = step;
         }        // Doctor Selection
         function initializeEventListeners() {
+            // Login functionality
+            document.getElementById('loginButton').addEventListener('click', function() {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                
+                if (email && password) {
+                    // For demo purposes, any email/password combination works
+                    // Use mock data if available, otherwise create a generic user
+                    currentUser = mockUserProfiles[email] || {
+                        firstName: 'Demo',
+                        lastName: 'User',
+                        email: email,
+                        phone: '(555) 000-0000',
+                        dateOfBirth: '1990-01-01',
+                        gender: 'other',
+                        address: '123 Demo Street, Demo City, DC 12345',
+                        insurance: 'Demo Insurance',
+                        allergies: 'None',
+                        medications: 'None'
+                    };
+                    
+                    login(currentUser);
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                    modal.hide();
+                    
+                    // Clear form
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                } else {
+                    alert('Please enter both email and password');
+                }
+            });
+            
+            // Logout functionality
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                logout();
+            });
+
             // Appointment type selection
             document.querySelectorAll('.select-appointment-type').forEach(button => {
                 button.addEventListener('click', function() {
@@ -1068,13 +1342,20 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                     appointmentData.time = selectedTime;
                     goToStep(4);
                 }
-            });
-
-            // Continue to confirmation
-            document.getElementById('continueToConfirmation').addEventListener('click', function() {                if (validatePatientForm()) {
-                    collectPatientData();
-                    updateConfirmationSummary();
-                    goToStep(5);
+            });            // Continue to confirmation
+            document.getElementById('continueToConfirmation').addEventListener('click', function() {
+                if (isLoggedIn) {
+                    if (validateSimplifiedForm()) {
+                        collectSimplifiedPatientData();
+                        updateConfirmationSummary();
+                        goToStep(5);
+                    }
+                } else {
+                    if (validatePatientForm()) {
+                        collectPatientData();
+                        updateConfirmationSummary();
+                        goToStep(5);
+                    }
                 }
             });
 
@@ -1085,7 +1366,56 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
 
             // Calendar navigation
             document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
-            document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
+            document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));        }
+
+        // Login/Logout Functions
+        function login(user) {
+            isLoggedIn = true;
+            currentUser = user;
+            
+            // Update navbar
+            document.getElementById('loginNavItem').classList.add('d-none');
+            document.getElementById('userNavItem').classList.remove('d-none');
+            document.getElementById('userName').textContent = `${user.firstName} ${user.lastName}`;
+            
+            // Update patient form
+            updatePatientForm();
+        }
+        
+        function logout() {
+            isLoggedIn = false;
+            currentUser = null;
+            
+            // Update navbar
+            document.getElementById('loginNavItem').classList.remove('d-none');
+            document.getElementById('userNavItem').classList.add('d-none');
+            
+            // Reset patient form
+            updatePatientForm();
+        }
+        
+        function updatePatientForm() {
+            if (isLoggedIn && currentUser) {
+                // Show logged in form, hide guest form
+                document.getElementById('loggedInForm').classList.remove('d-none');
+                document.getElementById('guestForm').classList.add('d-none');
+                
+                // Populate profile information
+                document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+                document.getElementById('profileEmail').textContent = currentUser.email;
+                document.getElementById('profilePhone').textContent = currentUser.phone;
+                document.getElementById('profileDOB').textContent = new Date(currentUser.dateOfBirth).toLocaleDateString();
+                document.getElementById('profileInsurance').textContent = currentUser.insurance;
+                document.getElementById('profileAddress').textContent = currentUser.address;
+            } else {
+                // Show guest form, hide logged in form
+                document.getElementById('loggedInForm').classList.add('d-none');
+                document.getElementById('guestForm').classList.remove('d-none');
+            }
+        }
+        
+        function editProfile() {
+            alert('Profile editing would open a modal with editable fields. This is a demo feature.');
         }
 
         // Doctor Filtering
@@ -1256,8 +1586,21 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                 isValid = false;
             } else {
                 termsCheckbox.classList.remove('is-invalid');
-            }
+            }            return isValid;
+        }
 
+        function validateSimplifiedForm() {
+            const reasonField = document.getElementById('reasonForVisitSimple');
+            let isValid = true;
+            
+            if (!reasonField.value.trim()) {
+                reasonField.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                reasonField.classList.remove('is-invalid');
+                reasonField.classList.add('is-valid');
+            }
+            
             return isValid;
         }
 
@@ -1275,6 +1618,26 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                 symptoms: document.getElementById('symptoms').value,
                 medications: document.getElementById('medications').value,
                 allergies: document.getElementById('allergies').value
+            };
+        }
+
+        function collectSimplifiedPatientData() {
+            // Use current user profile data + form inputs
+            appointmentData.patient = {
+                firstName: currentUser.firstName,
+                lastName: currentUser.lastName,
+                email: currentUser.email,
+                phone: currentUser.phone,
+                dateOfBirth: currentUser.dateOfBirth,
+                gender: currentUser.gender,
+                address: currentUser.address,
+                insurance: currentUser.insurance,
+                reasonForVisit: document.getElementById('reasonForVisitSimple').value,
+                symptoms: document.getElementById('symptomsSimple').value,
+                urgencyLevel: document.getElementById('urgencyLevel').value,
+                additionalNotes: document.getElementById('additionalNotes').value,
+                allergies: currentUser.allergies,
+                medications: currentUser.medications
             };
         }        function updateConfirmationSummary() {
             // Appointment type and location
@@ -1310,13 +1673,15 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
                 ? 'Please arrive 15 minutes early for your appointment. Bring a valid ID and your insurance card.'
                 : 'Please ensure you have a stable internet connection and a quiet environment. Video call link will be sent 30 minutes before your appointment.';
             document.getElementById('alertText').textContent = alertText;
-        }
-
-        function bookAppointment() {
+        }        function bookAppointment() {
             // Simulate booking process
             const confirmationNumber = 'APT-' + new Date().getFullYear() + '-' + Math.random().toString().substr(2, 6);
             document.getElementById('confirmationNumber').textContent = confirmationNumber;
-              // Show success message
+            
+            // Populate appointment summary
+            populateAppointmentSummary();
+              
+            // Show success message
             document.getElementById('confirmationStep').classList.add('d-none');
             document.getElementById('successMessage').classList.remove('d-none');
             
@@ -1330,9 +1695,162 @@ Built following Bootstrap 5 best practices and accessibility guidelines.
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Real-time form validation
+        // Populate appointment summary in success step
+        function populateAppointmentSummary() {
+            const summaryHtml = `
+                <div class="col-md-6">
+                    <h6>Appointment Details</h6>
+                    <p><strong>Type:</strong> ${appointmentData.type === 'inperson' ? 'In-Person Visit' : 'Teleconsultation'}</p>
+                    <p><strong>Doctor:</strong> ${appointmentData.doctor}</p>
+                    <p><strong>Specialty:</strong> ${appointmentData.specialty}</p>
+                    <p><strong>Date:</strong> ${new Date(appointmentData.date).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    })}</p>
+                    <p><strong>Time:</strong> ${appointmentData.time}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Patient Information</h6>
+                    <p><strong>Name:</strong> ${appointmentData.patient.firstName} ${appointmentData.patient.lastName}</p>
+                    <p><strong>Email:</strong> ${appointmentData.patient.email}</p>
+                    <p><strong>Phone:</strong> ${appointmentData.patient.phone}</p>
+                    <p><strong>Insurance:</strong> ${appointmentData.patient.insurance || 'Not provided'}</p>
+                    ${appointmentData.patient.reason ? `<p><strong>Reason:</strong> ${appointmentData.patient.reason}</p>` : ''}
+                </div>
+            `;
+            document.getElementById('appointmentSummary').innerHTML = summaryHtml;
+        }
+
+        // Appointment Management Functions
+        function modifyAppointment() {
+            const modal = new bootstrap.Modal(document.getElementById('modifyModal'));
+            modal.show();
+        }
+
+        function cancelAppointment() {
+            const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+
+        function modifyDoctor() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modifyModal'));
+            modal.hide();
+            
+            // Reset to doctor selection step but keep other data
+            goToStep(2);
+            
+            // Show notification
+            showAlert('Select a new doctor to update your appointment.', 'info');
+        }
+
+        function modifyDateTime() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modifyModal'));
+            modal.hide();
+            
+            // Reset to date/time selection step
+            goToStep(3);
+            
+            // Show notification
+            showAlert('Select a new date and time for your appointment.', 'info');
+        }
+
+        function modifyInsurance() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modifyModal'));
+            modal.hide();
+            
+            // Reset to patient details step
+            goToStep(4);
+            
+            // Show notification
+            showAlert('Update your insurance information and other details.', 'info');
+        }
+
+        function modifyType() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modifyModal'));
+            modal.hide();
+            
+            // Reset to appointment type selection
+            goToStep(1);
+            
+            // Show notification
+            showAlert('Select a new appointment type (in-person or teleconsultation).', 'info');
+        }
+
+        function confirmCancellation() {
+            const reason = document.getElementById('cancellationReason').value.trim();
+            
+            // Hide modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('cancelModal'));
+            modal.hide();
+            
+            // Show cancellation confirmation
+            const successDiv = document.getElementById('successMessage');
+            successDiv.innerHTML = `
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <div class="text-center">
+                            <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
+                            <h2 class="mt-4 text-danger">Appointment Cancelled</h2>
+                            <p class="lead mb-4">Your appointment has been successfully cancelled.</p>
+                            
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5>Cancellation Details</h5>
+                                    <p><strong>Confirmation Number:</strong> <span class="text-muted">${document.getElementById('confirmationNumber').textContent} (CANCELLED)</span></p>
+                                    <p><strong>Cancelled On:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                                    ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+                                    <p class="mb-0">A cancellation confirmation email has been sent to your email address.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button class="btn btn-primary me-2" onclick="location.reload()">
+                                    <i class="bi bi-plus-circle me-2"></i>Book New Appointment
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="window.print()">
+                                    <i class="bi bi-printer me-2"></i>Print Cancellation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Clear the cancellation reason
+            document.getElementById('cancellationReason').value = '';
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv && alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }// Real-time form validation
         document.addEventListener('input', function(e) {
             if (e.target.matches('#patientForm input, #patientForm textarea, #patientForm select')) {
+                if (e.target.value.trim()) {
+                    e.target.classList.remove('is-invalid');
+                    e.target.classList.add('is-valid');
+                }
+            }
+            if (e.target.matches('#simplifiedPatientForm input, #simplifiedPatientForm textarea, #simplifiedPatientForm select')) {
                 if (e.target.value.trim()) {
                     e.target.classList.remove('is-invalid');
                     e.target.classList.add('is-valid');
