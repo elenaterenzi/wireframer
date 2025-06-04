@@ -50,23 +50,37 @@
     <h1 class="mb-4 text-center">MyHealth Appointment</h1>
     <!-- Step 1: Select Specialty -->
     <div id="step1">
-      <label for="specialtySelect" class="form-label">Select Specialty</label>
-      <select id="specialtySelect" class="form-select mb-3"></select>
+      <label for="practiceSelect" class="form-label">Select Practice</label>
+      <select id="practiceSelect" class="form-select mb-3"></select>
       <button id="toStep2Btn" class="btn btn-primary">Next</button>
     </div>
     <!-- Step 2: Pick Doctor or Slot -->
     <div id="step2" style="display:none;">
       <h2 class="h5 mb-3" id="step2Title"></h2>
       <div class="row">
-        <div class="col-md-6">
-          <h3 class="h6">Doctors</h3>
-          <div id="doctorList" class="list-group"></div>
+        <div class="col-12 col-md-6 mb-3">
+          <div class="card h-100">
+            <div class="card-header">Option 1: Select a Doctor</div>
+            <div class="card-body">
+              <div id="doctorList" class="list-group"></div>
+            </div>
+          </div>
         </div>
-        <div class="col-md-6">
-          <h3 class="h6">Pick Date & Time</h3>
-          <input type="date" id="dateInput" class="form-control mb-2">
-          <input type="time" id="timeInput" class="form-control mb-2">
-          <button id="slotSearchBtn" class="btn btn-secondary">Check Available Doctors</button>
+        <div class="col-12 col-md-6 mb-3">
+          <div class="card h-100">
+            <div class="card-header">Option 2: Pick Date & Time</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label" for="dateInput">Date</label>
+                <input type="date" id="dateInput" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="timeInput">Time</label>
+                <input type="time" id="timeInput" class="form-control">
+              </div>
+              <button id="slotSearchBtn" class="btn btn-secondary w-100">Check Available Doctors</button>
+            </div>
+          </div>
         </div>
       </div>
       <button id="backToStep1Btn" class="btn btn-link mt-3">Back</button>
@@ -123,13 +137,13 @@
     }
 
     // Populate specialties
-    const specialtySelect = document.getElementById('specialtySelect');
-    [...new Set(doctors.map(d=>d.practice))].forEach(sp=> specialtySelect.innerHTML+=`<option value="${sp}">${sp}</option>`);
+    const practiceSelect = document.getElementById('practiceSelect');
+    [...new Set(doctors.map(d=>d.practice))].forEach(sp=> practiceSelect.innerHTML+=`<option value="${sp}">${sp}</option>`);
 
     // Step1 -> Step2
     document.getElementById('toStep2Btn').addEventListener('click', ()=>{
-      const practice = specialtySelect.value;
-      document.getElementById('step2Title').textContent = `Specialty: ${practice}`;
+      const practice = practiceSelect.value;
+      document.getElementById('step2Title').textContent = `Practice: ${practice}`;
       // list doctors
       const docList = document.getElementById('doctorList'); docList.innerHTML='';
       doctors.filter(d=>d.practice===practice).forEach(d=>{
@@ -155,7 +169,7 @@
 
     // Slot-first flow
     document.getElementById('slotSearchBtn').addEventListener('click',()=>{
-      const practice = specialtySelect.value;
+      const practice = practiceSelect.value;
       const date = document.getElementById('dateInput').value;
       const time = document.getElementById('timeInput').value;
       const slot = date+ 'T'+ time;
@@ -223,7 +237,7 @@
         const appt = appointments.splice(idx, 1)[0];
         renderAppointments();
         // Prefill specialty and go to step2
-        specialtySelect.value = appt.practice;
+        practiceSelect.value = appt.practice;
         document.getElementById('toStep2Btn').click();
       }
     });
