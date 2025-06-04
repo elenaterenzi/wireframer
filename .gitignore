@@ -24,5 +24,5 @@ desktop.ini
 *.backup
 *.old
 
-# Generated html files
-/*.html
+## Generated html files
+# /*.html
