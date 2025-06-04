@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyHealth - Appointment Booking</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; padding: 20px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">MyHealth</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Appointments</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Login Section -->
+  <div id="loginSection" class="container">
+    <h2 class="mb-4 text-center">Sign In</h2>
+    <form id="loginForm" class="w-50 mx-auto">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input id="username" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input id="password" type="password" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Sign In</button>
+    </form>
+  </div>
+
+  <!-- Multi-Step Booking App -->
+  <div id="bookingApp" class="container" style="display:none;">
+    <h1 class="mb-4 text-center">MyHealth Appointment</h1>
+    <!-- Step 1: Select Specialty -->
+    <div id="step1">
+      <label for="specialtySelect" class="form-label">Select Specialty</label>
+      <select id="specialtySelect" class="form-select mb-3"></select>
+      <button id="toStep2Btn" class="btn btn-primary">Next</button>
+    </div>
+    <!-- Step 2: Pick Doctor or Slot -->
+    <div id="step2" style="display:none;">
+      <h2 class="h5 mb-3" id="step2Title"></h2>
+      <div class="row">
+        <div class="col-md-6">
+          <h3 class="h6">Doctors</h3>
+          <div id="doctorList" class="list-group"></div>
+        </div>
+        <div class="col-md-6">
+          <h3 class="h6">Pick Date & Time</h3>
+          <input type="date" id="dateInput" class="form-control mb-2">
+          <input type="time" id="timeInput" class="form-control mb-2">
+          <button id="slotSearchBtn" class="btn btn-secondary">Check Available Doctors</button>
+        </div>
+      </div>
+      <button id="backToStep1Btn" class="btn btn-link mt-3">Back</button>
+    </div>
+    <!-- Step 3: Results -->
+    <div id="step3" style="display:none;">
+      <h2 id="step3Title" class="h5 mb-3"></h2>
+      <div id="step3Content" class="row"></div>
+      <button id="backToStep2Btn" class="btn btn-link mt-3">Back</button>
+    </div>
+  </div>
+
+  <!-- My Appointments Section -->
+  <div id="myAppointments" class="container mt-5" style="display:none;">
+    <h2 class="mb-3">My Appointments</h2>
+    <ul id="appointmentList" class="list-group"></ul>
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mocked authentication
+    let currentUser = null;
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Accept any credentials, set fake user
+      const username = document.getElementById('username').value;
+      currentUser = { id: 1, name: username || 'John Doe', email: username + '@example.com' };
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('bookingApp').style.display = 'block';
+      document.getElementById('myAppointments').style.display = 'block';
+      // Optionally display greeting
+      const navBrand = document.querySelector('.navbar-brand');
+      navBrand.textContent = `MyHealth (${currentUser.name})`;
+    });
+
+    // Sample data
+    const doctors = [
+      { id: 1, name: 'Dr. Alice Smith', practice: 'General Practitioner', slots: ['2025-06-05T09:00', '2025-06-05T10:00', '2025-06-06T14:00'] },
+      { id: 2, name: 'Dr. Bob Johnson', practice: 'General Practitioner', slots: ['2025-06-05T11:00', '2025-06-07T09:00', '2025-06-08T15:00'] },
+      { id: 3, name: 'Dr. Carol Lee', practice: 'Dentist', slots: ['2025-06-06T09:00', '2025-06-06T11:00', '2025-06-09T10:00'] },
+      { id: 4, name: 'Dr. David Kim', practice: 'Cardiologist', slots: ['2025-06-07T08:00', '2025-06-07T12:00', '2025-06-09T14:00'] },
+      { id: 5, name: 'Dr. Emma Patel', practice: 'Dermatologist', slots: ['2025-06-08T11:00', '2025-06-08T15:00', '2025-06-09T09:00'] },
+      { id: 6, name: 'Dr. Frank Miller', practice: 'Neurologist', slots: ['2025-06-05T10:00', '2025-06-07T13:00', '2025-06-10T09:00'] },
+      { id: 7, name: 'Dr. Grace Wong', practice: 'Pediatrician', slots: ['2025-06-06T08:00', '2025-06-08T10:00', '2025-06-10T14:00'] },
+      { id: 8, name: 'Dr. Henry Adams', practice: 'Orthopedist', slots: ['2025-06-05T09:00', '2025-06-06T15:00', '2025-06-09T11:00'] },
+      { id: 9, name: 'Dr. Irene Clark', practice: 'Dentist', slots: ['2025-06-06T13:00', '2025-06-07T11:00', '2025-06-10T10:00'] },
+      { id: 10, name: 'Dr. Jack Davis', practice: 'General Practitioner', slots: ['2025-06-05T14:00', '2025-06-08T09:00', '2025-06-10T16:00'] }
+    ];
+
+    // Helpers
+    function showStep(step) {
+      ['step1','step2','step3'].forEach(s => document.getElementById(s).style.display = (s===step?'block':'none'));
+    }
+
+    // Populate specialties
+    const specialtySelect = document.getElementById('specialtySelect');
+    [...new Set(doctors.map(d=>d.practice))].forEach(sp=> specialtySelect.innerHTML+=`<option value="${sp}">${sp}</option>`);
+
+    // Step1 -> Step2
+    document.getElementById('toStep2Btn').addEventListener('click', ()=>{
+      const practice = specialtySelect.value;
+      document.getElementById('step2Title').textContent = `Specialty: ${practice}`;
+      // list doctors
+      const docList = document.getElementById('doctorList'); docList.innerHTML='';
+      doctors.filter(d=>d.practice===practice).forEach(d=>{
+        docList.innerHTML+=`<button class="list-group-item list-group-item-action" data-id="${d.id}">${d.name}</button>`;
+      });
+      showStep('step2');
+    });
+
+    // Back handlers
+    document.getElementById('backToStep1Btn').addEventListener('click', ()=> showStep('step1'));
+    document.getElementById('backToStep2Btn').addEventListener('click', ()=> showStep('step2'));
+
+    // Doctor-first flow
+    document.getElementById('doctorList').addEventListener('click',(e)=>{
+      const id = +e.target.dataset.id;
+      const doc = doctors.find(d=>d.id===id);
+      const title = document.getElementById('step3Title');
+      title.textContent = `Available slots for ${doc.name}`;
+      const content = document.getElementById('step3Content'); content.innerHTML='';
+      doc.slots.filter(()=>Math.random()>0.3).forEach(s=> content.innerHTML+=`<div class="col-12"><button class="btn btn-outline-primary mb-2" data-id="${doc.id}" data-slot="${s}">${new Date(s).toLocaleString()}</button></div>`);
+      showStep('step3');
+    });
+
+    // Slot-first flow
+    document.getElementById('slotSearchBtn').addEventListener('click',()=>{
+      const practice = specialtySelect.value;
+      const date = document.getElementById('dateInput').value;
+      const time = document.getElementById('timeInput').value;
+      const slot = date+ 'T'+ time;
+      const available = doctors.filter(d=>d.practice===practice&&d.slots.includes(slot)&&Math.random()>0.3);
+      document.getElementById('step3Title').textContent = `Doctors available at ${new Date(slot).toLocaleString()}`;
+      const content = document.getElementById('step3Content'); content.innerHTML='';
+      available.forEach(d=> content.innerHTML+=`<div class="col-md-6"><div class="card mb-2"><div class="card-body">${d.name}</div></div></div>`);
+      showStep('step3');
+    });
+
+    // Appointment state
+    const appointments = [];
+
+    function renderAppointments() {
+      const list = document.getElementById('appointmentList');
+      list.innerHTML = '';
+      appointments.forEach(a => {
+        list.innerHTML += `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>${a.doctor}</strong> (${a.practice})<br>
+              ${new Date(a.datetime).toLocaleString()}
+            </div>
+            <div>
+              <button class="btn btn-sm btn-link btn-change" data-id="${a.id}">Change</button>
+              <button class="btn btn-sm btn-danger btn-cancel" data-id="${a.id}">Cancel</button>
+            </div>
+          </li>`;
+      });
+    }
+
+    function bookAppointment(docId, slot) {
+      const doc = doctors.find(d => d.id === docId);
+      const appt = {
+        id: Date.now(),
+        doctor: doc.name,
+        practice: doc.practice,
+        datetime: slot
+      };
+      appointments.push(appt);
+      renderAppointments();
+      showStep('step1');
+    }
+
+    const step3Content = document.getElementById('step3Content');
+    // Finalize booking on slot click
+    step3Content.addEventListener('click', e => {
+      if (!e.target.classList.contains('btn') || !e.target.dataset.slot) return;
+      const docId = +e.target.dataset.id;
+      const slot = e.target.dataset.slot;
+      bookAppointment(docId, slot);
+    });
+
+    // Manage existing appointments
+    document.getElementById('appointmentList').addEventListener('click', e => {
+      const id = +e.target.dataset.id;
+      if (e.target.classList.contains('btn-cancel')) {
+        const idx = appointments.findIndex(a => a.id === id);
+        if (idx !== -1) appointments.splice(idx, 1);
+        renderAppointments();
+      }
+      if (e.target.classList.contains('btn-change')) {
+        const idx = appointments.findIndex(a => a.id === id);
+        if (idx === -1) return;
+        const appt = appointments.splice(idx, 1)[0];
+        renderAppointments();
+        // Prefill specialty and go to step2
+        specialtySelect.value = appt.practice;
+        document.getElementById('toStep2Btn').click();
+      }
+    });
+  </script>
+</body>
+</html>
